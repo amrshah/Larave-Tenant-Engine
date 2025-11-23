@@ -70,17 +70,17 @@ class TenantEngineServiceProvider extends ServiceProvider
         }
 
         // Super Admin routes
-        Route::middleware(['api'])
+        Route::middleware(['api', 'api.version'])
             ->prefix('api/v1/super-admin')
             ->group(__DIR__.'/../Routes/super-admin.php');
 
         // Central API routes (authentication, tenant selection)
-        Route::middleware(['api'])
+        Route::middleware(['api', 'api.version'])
             ->prefix('api/v1')
             ->group(__DIR__.'/../Routes/api.php');
 
         // Tenant-scoped routes
-        Route::middleware(['api'])
+        Route::middleware(['api', 'api.version'])
             ->prefix('{tenant_slug}/api/v1')
             ->group(__DIR__.'/../Routes/tenant.php');
     }

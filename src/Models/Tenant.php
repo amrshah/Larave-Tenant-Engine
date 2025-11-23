@@ -3,6 +3,7 @@
 namespace Amrshah\TenantEngine\Models;
 
 use Amrshah\TenantEngine\Models\Traits\HasExternalId;
+use Amrshah\TenantEngine\Traits\OptimizesQueries;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
@@ -11,7 +12,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends BaseTenant implements TenantWithDatabase
 {
-    use HasDatabase, HasDomains, HasExternalId, SoftDeletes;
+    use HasDatabase, HasDomains, HasExternalId, SoftDeletes, OptimizesQueries;
+
+    /**
+     * Allowed includes for eager loading.
+     */
+    protected array $allowedIncludes = ['domains', 'users'];
+
+    /**
+     * Allowed sort fields.
+     */
+    protected array $allowedSorts = ['name', 'email', 'created_at', 'status', 'plan'];
 
     /**
      * The attributes that are mass assignable.

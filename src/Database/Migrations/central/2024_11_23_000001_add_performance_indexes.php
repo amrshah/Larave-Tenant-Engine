@@ -11,17 +11,44 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tenants', function (Blueprint $table) {
-            // Add indexes for frequently queried columns
-            $table->index(['status', 'created_at'], 'idx_tenants_status_created');
-            $table->index('email', 'idx_tenants_email');
-            $table->index(['plan', 'status'], 'idx_tenants_plan_status');
-        });
+        // Only add indexes if tables exist
+        if (Schema::hasTable('tenants')) {
+            Schema::table('tenants', function (Blueprint $table) {
+                try {
+                    $table->index(['status', 'created_at'], 'idx_tenants_status_created');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
+                
+                try {
+                    $table->index('email', 'idx_tenants_email');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
+                
+                try {
+                    $table->index(['plan', 'status'], 'idx_tenants_plan_status');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
+            });
+        }
 
-        Schema::table('super_admins', function (Blueprint $table) {
-            $table->index(['status', 'created_at'], 'idx_super_admins_status_created');
-            $table->index('email', 'idx_super_admins_email');
-        });
+        if (Schema::hasTable('super_admins')) {
+            Schema::table('super_admins', function (Blueprint $table) {
+                try {
+                    $table->index(['status', 'created_at'], 'idx_super_admins_status_created');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
+                
+                try {
+                    $table->index('email', 'idx_super_admins_email');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
+            });
+        }
     }
 
     /**

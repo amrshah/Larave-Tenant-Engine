@@ -48,30 +48,43 @@ class AuthController extends BaseController
             return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
-        $userModel = config('tenant-engine.models.user');
-        
-        $user = $userModel::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            $userModel = config('tenant-engine.models.user');
+            
+            $user = $userModel::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        // Create token
-        $token = $user->createToken('auth-token')->plainTextToken;
+            // Create token
+            $token = $user->createToken('auth-token')->plainTextToken;
 
-        return $this->createdResponse([
-            'type' => 'users',
-            'id' => $user->external_id,
-            'attributes' => [
-                'name' => $user->name,
-                'email' => $user->email,
-                'created_at' => $user->created_at->toIso8601String(),
-            ],
-            'meta' => [
-                'token' => $token,
-                'token_type' => 'Bearer',
-            ],
-        ]);
+            return $this->createdResponse([
+                'type' => 'users',
+                'id' => $user->external_id,
+                'attributes' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'created_at' => $user->created_at->toIso8601String(),
+                ],
+                'meta' => [
+                    'token' => $token,
+                    'token_type' => 'Bearer',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('User registration failed', [
+                'error' => $e->getMessage(),
+                'email' => $request->email,
+            ]);
+            
+            return $this->errorResponse(
+                'Registration Failed',
+                'Unable to create user account. Please try again.',
+                500
+            );
+        }
     }
 
     /**

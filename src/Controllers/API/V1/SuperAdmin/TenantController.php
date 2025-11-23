@@ -7,6 +7,7 @@ use Amrshah\TenantEngine\Http\Requests\CreateTenantRequest;
 use Amrshah\TenantEngine\Http\Requests\UpdateTenantRequest;
 use Amrshah\TenantEngine\Http\Resources\TenantResource;
 use Amrshah\TenantEngine\Models\Tenant;
+use Amrshah\TenantEngine\Services\TenantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Validator;
  */
 class TenantController extends BaseController
 {
+    public function __construct(
+        protected TenantService $tenantService
+    ) {}
+
     /**
      * Display a listing of tenants.
      * 
@@ -102,21 +107,8 @@ class TenantController extends BaseController
      */
     public function store(CreateTenantRequest $request): JsonResponse
     {
-        DB::beginTransaction();
         try {
-            $tenant = Tenant::create([
-                'id' => $request->slug,
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'plan' => $request->plan ?? config('tenant-engine.tenant.default_plan'),
-                'status' => config('tenant-engine.tenant.default_status'),
-                'trial_ends_at' => $request->trial_days ? now()->addDays($request->trial_days) : null,
-            ]);
-
-            // Tenant database will be created automatically by Stancl
-
-            DB::commit();
+            $tenant = $this->tenantService->createTenant($request->validated());
 
             return $this->createdResponse([
                 'type' => 'tenants',
@@ -132,15 +124,6 @@ class TenantController extends BaseController
                 ],
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            
-            \Log::error('Tenant creation failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['password']),
-                'user_id' => auth()->id(),
-            ]);
-            
             return $this->errorResponse('Tenant Creation Failed', $e->getMessage(), 500);
         }
     }
@@ -209,8 +192,7 @@ class TenantController extends BaseController
     public function update(UpdateTenantRequest $request, string $tenant): JsonResponse
     {
         $tenant = Tenant::findByExternalIdOrFail($tenant);
-
-        $tenant->update($request->only(['name', 'email', 'phone', 'plan']));
+        $tenant = $this->tenantService->updateTenant($tenant, $request->validated());
 
         return $this->successResponse([
             'type' => 'tenants',

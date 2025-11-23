@@ -284,8 +284,8 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 **Ali Raza** (a.k.a Amr Shah)
 
 - GitHub: [@amrshah](https://github.com/amrshah)
-- Email: ali@amrshah.dev
-- Website: [amrshah.dev](https://amrshah.dev)
+- Email: amrshah@gmail.com
+- Website: [amrshah.github.io](https://amrshah.github.io)
 
 ---
 

@@ -1,0 +1,86 @@
+{
+    "name": "amrshah/tenant-engine",
+    "description": "Production-ready Laravel package for multi-tenant SaaS applications with Super Admin and Tenant Admin capabilities",
+    "keywords": [
+        "laravel",
+        "multi-tenant",
+        "saas",
+        "tenancy",
+        "api",
+        "sanctum",
+        "oauth",
+        "rbac",
+        "abac",
+        "swagger"
+    ],
+    "homepage": "https://github.com/amrshah/tenant-engine",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ali Raza (Amr Shah)",
+            "email": "ali@amrshah.dev",
+            "homepage": "https://amrshah.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/contracts": "^10.0||^11.0||^12.0",
+        "stancl/tenancy": "^3.8",
+        "laravel/sanctum": "^3.3||^4.0",
+        "laravel/socialite": "^5.11",
+        "amrshah/laravel-arbac": "*",
+        "hidehalo/nanoid-php": "^1.1",
+        "darkaonline/l5-swagger": "^8.5"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0||^9.0||^10.0",
+        "phpunit/phpunit": "^10.0||^11.0",
+        "laravel/pint": "^1.13",
+        "phpstan/phpstan": "^1.10",
+        "pestphp/pest": "^2.0||^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0||^3.0"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../laravel-arbac"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Amrshah\\TenantEngine\\": "src/",
+            "Amrshah\\TenantEngine\\Database\\Factories\\": "src/Database/Factories/",
+            "Amrshah\\TenantEngine\\Database\\Seeders\\": "src/Database/Seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Amrshah\\TenantEngine\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test:pest": "vendor/bin/pest",
+        "test:coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Amrshah\\TenantEngine\\Providers\\TenantEngineServiceProvider"
+            ],
+            "aliases": {
+                "TenantEngine": "Amrshah\\TenantEngine\\Facades\\TenantEngine"
+            }
+        }
+    }
+}

@@ -81,18 +81,18 @@ class HealthController extends BaseController
     protected function checkRedis(): array
     {
         try {
-            $start = microtime(true);
             Redis::ping();
-            $responseTime = round((microtime(true) - $start) * 1000, 2);
-
-            $info = Redis::info('memory');
-
+            
             return [
                 'status' => 'up',
-                'response_time' => $responseTime . 'ms',
-                'memory_usage' => $info['used_memory_human'] ?? 'unknown',
+                'message' => 'Redis is operational',
             ];
         } catch (\Throwable $e) {
+            \Log::warning('Redis health check failed', [
+                'error' => $e->getMessage(),
+                'type' => get_class($e),
+            ]);
+            
             return [
                 'status' => 'down',
                 'error' => $e->getMessage(),

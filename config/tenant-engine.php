@@ -264,7 +264,7 @@ return [
     */
 
     'middleware' => [
-        'super_admin' => \Amrshah\TenantEngine\Http\Middleware\SuperAdminOnly::class,
+        'super_admin' => \Amrshah\TenantEngine\Middleware\EnsureSuperAdmin::class,
         'tenant_admin' => \Amrshah\TenantEngine\Http\Middleware\TenantAdminOnly::class,
         'identify_tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByPath::class,
         'check_tenant_status' => \Amrshah\TenantEngine\Http\Middleware\CheckTenantStatus::class,

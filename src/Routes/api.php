@@ -25,11 +25,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Authentication Routes
 Route::prefix('auth')->name('auth.')->group(function () {
-    // Public routes
-    Route::post('/register', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'register'])->name('register');
-    Route::post('/login', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'login'])->name('login');
-    Route::post('/forgot-password', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'forgotPassword'])->name('forgot-password');
-    Route::post('/reset-password', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'resetPassword'])->name('reset-password');
+    // Public routes with rate limiting
+    Route::post('/register', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'register'])
+        ->middleware('throttle:10,1') // 10 attempts per minute
+        ->name('register');
+    Route::post('/login', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'login'])
+        ->middleware('throttle:5,1') // 5 attempts per minute
+        ->name('login');
+    Route::post('/forgot-password', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:3,1') // 3 attempts per minute
+        ->name('forgot-password');
+    Route::post('/reset-password', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'resetPassword'])
+        ->middleware('throttle:5,1') // 5 attempts per minute
+        ->name('reset-password');
     
     // Email verification
     Route::get('/verify-email/{id}/{hash}', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'verifyEmail'])

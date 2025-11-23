@@ -3,6 +3,8 @@
 namespace Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin;
 
 use Amrshah\TenantEngine\Controllers\API\BaseController;
+use Amrshah\TenantEngine\Http\Requests\CreateTenantRequest;
+use Amrshah\TenantEngine\Http\Requests\UpdateTenantRequest;
 use Amrshah\TenantEngine\Http\Resources\TenantResource;
 use Amrshah\TenantEngine\Models\Tenant;
 use Illuminate\Http\JsonResponse;
@@ -98,21 +100,8 @@ class TenantController extends BaseController
      *     @OA\Response(response=201, description="Tenant created")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(CreateTenantRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants,email',
-            'slug' => 'required|string|min:3|max:50|unique:tenants,id|alpha_dash',
-            'phone' => 'nullable|string|max:20',
-            'plan' => 'nullable|string|max:50',
-            'trial_days' => 'nullable|integer|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationErrorResponse($validator->errors()->toArray());
-        }
-
         DB::beginTransaction();
         try {
             $tenant = Tenant::create([
@@ -144,6 +133,14 @@ class TenantController extends BaseController
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            \Log::error('Tenant creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['password']),
+                'user_id' => auth()->id(),
+            ]);
+            
             return $this->errorResponse('Tenant Creation Failed', $e->getMessage(), 500);
         }
     }
@@ -209,20 +206,9 @@ class TenantController extends BaseController
      *     @OA\Response(response=200, description="Tenant updated")
      * )
      */
-    public function update(Request $request, string $tenant): JsonResponse
+    public function update(UpdateTenantRequest $request, string $tenant): JsonResponse
     {
         $tenant = Tenant::findByExternalIdOrFail($tenant);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:tenants,email,' . $tenant->id . ',id',
-            'phone' => 'nullable|string|max:20',
-            'plan' => 'sometimes|string|max:50',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationErrorResponse($validator->errors()->toArray());
-        }
 
         $tenant->update($request->only(['name', 'email', 'phone', 'plan']));
 

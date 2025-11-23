@@ -14,13 +14,27 @@ class OAuthController extends BaseController
     {
         $this->validateProvider($provider);
 
-        $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
+        // Generate state parameter for CSRF protection
+        $state = bin2hex(random_bytes(16));
+        
+        // Store state in cache with 10 minute expiration
+        cache()->put("oauth_state_{$state}", [
+            'provider' => $provider,
+            'created_at' => now(),
+        ], now()->addMinutes(10));
+
+        $url = Socialite::driver($provider)
+            ->stateless()
+            ->with(['state' => $state])
+            ->redirect()
+            ->getTargetUrl();
 
         return $this->successResponse([
             'type' => 'oauth-redirect',
             'attributes' => [
                 'provider' => $provider,
                 'url' => $url,
+                'state' => $state,
             ],
         ]);
     }
@@ -28,6 +42,31 @@ class OAuthController extends BaseController
     public function callback(Request $request, string $provider): JsonResponse
     {
         $this->validateProvider($provider);
+
+        // Validate state parameter for CSRF protection
+        $state = $request->input('state');
+        if (!$state || !cache()->has("oauth_state_{$state}")) {
+            return $this->errorResponse(
+                'Invalid Request',
+                'Invalid or expired OAuth state parameter',
+                400,
+                'INVALID_OAUTH_STATE'
+            );
+        }
+
+        // Verify provider matches
+        $stateData = cache()->get("oauth_state_{$state}");
+        if ($stateData['provider'] !== $provider) {
+            return $this->errorResponse(
+                'Invalid Request',
+                'OAuth provider mismatch',
+                400,
+                'PROVIDER_MISMATCH'
+            );
+        }
+
+        // Delete used state
+        cache()->forget("oauth_state_{$state}");
 
         try {
             $socialiteUser = Socialite::driver($provider)->stateless()->user();

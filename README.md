@@ -8,66 +8,66 @@
 
 ---
 
-## ✨ Features
+## Features
 
-### 🏢 Multi-Tenancy
-- ✅ **Path-based tenant identification** (`/tenant-slug/api/...`)
-- ✅ **Automatic database isolation** per tenant (powered by Stancl/Tenancy)
-- ✅ **Tenant-aware caching** (Redis)
-- ✅ **Tenant-specific storage** (S3/local)
-- ✅ **Complete tenant isolation**
+### Multi-Tenancy
+- ✔ **Path-based tenant identification** (`/tenant-slug/api/...`)
+- ✔ **Automatic database isolation** per tenant (powered by Stancl/Tenancy)
+- ✔ **Tenant-aware caching** (Redis)
+- ✔ **Tenant-specific storage** (S3/local)
+- ✔ **Complete tenant isolation**
 
-### 🔐 Three-Level Access System
+### Three-Level Access System
 1. **Super Admin Level** - Manage all tenants, system analytics, global settings
 2. **Central Level** - Authentication, tenant selection, user profile
 3. **Tenant Level** - Tenant admin manages tenant resources
 
-### 🛡️ Authentication & Authorization
-- ✅ **Laravel Sanctum** - Token-based authentication
-- ✅ **OAuth 2.0** - Google, Microsoft, LinkedIn, Facebook
-- ✅ **Laravel ARBAC** - Advanced RBAC + ABAC hybrid
-- ✅ **Multi-tenant user access** - Users can belong to multiple tenants
-- ✅ **Email verification** & password reset
+### Authentication & Authorization
+- ✔ **Laravel Sanctum** - Token-based authentication
+- ✔ **OAuth 2.0** - Google, Microsoft, LinkedIn, Facebook
+- ✔ **Laravel ARBAC** - Advanced RBAC + ABAC hybrid
+- ✔ **Multi-tenant user access** - Users can belong to multiple tenants
+- ✔ **Email verification** & password reset
 
-### 🆔 External ID System
-- ✅ **Nano ID** with custom prefixes (`USR_xxx`, `TNT_xxx`, `CLI_xxx`)
-- ✅ **Never expose internal database IDs**
-- ✅ **URL-safe, collision-resistant**
-- ✅ **Automatic generation** via model trait
+### External ID System
+- ✔ **Nano ID** with custom prefixes (`USR_xxx`, `TNT_xxx`, `CLI_xxx`)
+- ✔ **Never expose internal database IDs**
+- ✔ **URL-safe, collision-resistant**
+- ✔ **Automatic generation** via model trait
 
-### 📡 API Standards
-- ✅ **JSON:API v1.1 compliant** responses
-- ✅ **RESTful** design principles
-- ✅ **API versioning** (`/api/v1/...`)
-- ✅ **Cursor-based pagination** for scalability
-- ✅ **Filtering, sorting, and including** relationships
+### API Standards
+- ✔ **JSON:API v1.1 compliant** responses
+- ✔ **RESTful** design principles
+- ✔ **API versioning** (`/api/v1/...`)
+- ✔ **Cursor-based pagination** for scalability
+- ✔ **Filtering, sorting, and including** relationships
 
-### 📚 API Documentation
-- ✅ **Swagger/OpenAPI 3.0** specification
-- ✅ **Interactive API documentation** (Swagger UI)
-- ✅ **Auto-generated** from code annotations
+### API Documentation
+- ✔ **Swagger/OpenAPI 3.0** specification
+- ✔ **Interactive API documentation** (Swagger UI)
+- ✔ **Auto-generated** from code annotations
 
-### 🏥 System Health Monitoring
-- ✅ **Health check endpoints** (`/health`, `/ping`, `/version`, `/status`)
-- ✅ **Database, Redis, Storage, Queue monitoring**
-- ✅ **Performance metrics**
+### System Health Monitoring
+- ✔ **Health check endpoints** (`/health`, `/ping`, `/version`, `/status`)
+- ✔ **Database, Redis, Storage, Queue monitoring**
+- ✔ **Performance metrics**
 
-### 🛡️ Security
-- ✅ **Rate limiting** (per user, per tenant, super admin)
-- ✅ **CORS** configuration
-- ✅ **Security headers** (CSP, X-Frame-Options, etc.)
-- ✅ **SQL injection prevention** (Eloquent ORM)
-- ✅ **XSS protection**
+### Security
+- ✔ **Rate limiting** (per user, per tenant, super admin)
+- ✔ **CORS** configuration
+- ✔ **Security headers** (CSP, X-Frame-Options, etc.)
+- ✔ **SQL injection prevention** (Eloquent ORM)
+- ✔ **XSS protection**
 
-### ⚡ Performance
-- ✅ **Redis caching** (tenant-aware)
-- ✅ **Database query optimization** (indexes, eager loading)
-- ✅ **Queue support** for heavy operations
-- ✅ **Horizontal scalability**
+### Performance
+- ✔ **Redis caching** (tenant-aware)
+- ✔ **Database query optimization** (indexes, eager loading)
+- ✔ **Queue support** for heavy operations
+- ✔ **Horizontal scalability**
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 - **PHP:** 8.1 or higher
 - **Laravel:** 10.x, 11.x, or 12.x
@@ -80,7 +80,7 @@
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ```bash
 # Install via Composer
@@ -94,15 +94,15 @@ php artisan tenant-engine:install
 ```
 
 The installation command will:
-- ✅ Publish configuration files
-- ✅ Publish and run migrations
-- ✅ Create default roles and permissions
-- ✅ Generate Swagger documentation
-- ✅ Set up example tenant (optional)
+- ✔ Publish configuration files
+- ✔ Publish and run migrations
+- ✔ Create default roles and permissions
+- ✔ Generate Swagger documentation
+- ✔ Set up example tenant (optional)
 
 ---
 
-## ⚙️ Configuration
+## ✔ Configuration
 
 Add to your `.env` file:
 
@@ -127,7 +127,7 @@ API_RATE_LIMIT_TENANT=10000
 
 ---
 
-## 📖 Quick Start
+## Quick Start
 
 ### Create Super Admin
 
@@ -156,7 +156,7 @@ http://localhost:8000/api/documentation
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Super Admin APIs
 
@@ -229,7 +229,7 @@ GET    /api/v1/status    # System status (authenticated)
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - [Installation Guide](docs/installation.md)
 - [Configuration Guide](docs/configuration.md)
@@ -240,7 +240,7 @@ GET    /api/v1/status    # System status (authenticated)
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -261,25 +261,25 @@ composer format
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
-## 🔒 Security
+## Security
 
 If you discover any security-related issues, please email security@amrshah.dev instead of using the issue tracker.
 
 ---
 
-## 📄 License
+## License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Ali Raza** (a.k.a Amr Shah)
 
@@ -289,7 +289,7 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 This package is built on top of excellent open-source packages:
 

@@ -62,6 +62,14 @@ return [
         'prefix' => 'api',
         'latest_version' => 'v1',
         
+        // Deprecated API versions with sunset information
+        'deprecated_versions' => [
+            // Example: 'v0' => [
+            //     'sunset_date' => '2025-06-01',
+            //     'migration_guide' => 'https://docs.example.com/migration/v0-to-v1',
+            // ],
+        ],
+        
         'rate_limits' => [
             'unauthenticated' => env('API_RATE_LIMIT_GUEST', 60),
             'authenticated' => env('API_RATE_LIMIT', 1000),
@@ -270,6 +278,7 @@ return [
         'check_tenant_status' => \Amrshah\TenantEngine\Http\Middleware\CheckTenantStatus::class,
         'validate_jsonapi' => \Amrshah\TenantEngine\Http\Middleware\ValidateJsonApi::class,
         'log_activity' => \Amrshah\TenantEngine\Http\Middleware\LogActivity::class,
+        'api.version' => \Amrshah\TenantEngine\Middleware\ApiVersionMiddleware::class,
     ],
 
     /*

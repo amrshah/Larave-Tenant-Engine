@@ -17,8 +17,9 @@ use Amrshah\TenantEngine\Controllers\API\V1\System\HealthController;
 Route::get('/health', [HealthController::class, 'index'])->name('health');
 Route::get('/ping', [HealthController::class, 'ping'])->name('ping');
 Route::get('/version', [HealthController::class, 'version'])->name('version');
+//Route::get('/status', [HealthController::class, 'status'])->name('status');
 
-// System Status (authenticated)
+//System Status (authenticated)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/status', [HealthController::class, 'status'])->name('status');
 });

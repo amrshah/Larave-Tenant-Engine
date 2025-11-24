@@ -36,7 +36,11 @@ class HealthController extends BaseController
             'queue' => $this->checkQueue(),
         ];
 
-        $isHealthy = collect($services)->every(fn($service) => $service['status'] === 'up');
+        // System is healthy if critical services are up
+        // Redis is optional, so we ignore it for health status
+        $isHealthy = $services['database']['status'] === 'up' 
+            && $services['storage']['status'] === 'up'
+            && in_array($services['queue']['status'], ['up', 'unknown']);
 
         $response = [
             'status' => $isHealthy ? 'healthy' : 'unhealthy',
@@ -59,13 +63,26 @@ class HealthController extends BaseController
             DB::connection()->getPdo();
             $responseTime = round((microtime(true) - $start) * 1000, 2);
 
+            $driver = DB::connection()->getDriverName();
+            $connections = [];
+
+            // Get connection info based on driver
+            if ($driver === 'mysql') {
+                try {
+                    $connections = [
+                        'active' => DB::connection()->select('SHOW STATUS LIKE "Threads_connected"')[0]->Value ?? 0,
+                        'max' => DB::connection()->select('SHOW VARIABLES LIKE "max_connections"')[0]->Value ?? 0,
+                    ];
+                } catch (\Exception $e) {
+                    // Ignore if can't get connection stats
+                }
+            }
+
             return [
                 'status' => 'up',
                 'response_time' => $responseTime . 'ms',
-                'connections' => [
-                    'active' => DB::connection()->select('SHOW STATUS LIKE "Threads_connected"')[0]->Value ?? 0,
-                    'max' => DB::connection()->select('SHOW VARIABLES LIKE "max_connections"')[0]->Value ?? 0,
-                ],
+                'driver' => $driver,
+                'connections' => $connections ?: null,
             ];
         } catch (\Exception $e) {
             return [
@@ -80,6 +97,14 @@ class HealthController extends BaseController
      */
     protected function checkRedis(): array
     {
+        // Check if Redis is configured and available
+        if (!class_exists(\Illuminate\Support\Facades\Redis::class)) {
+            return [
+                'status' => 'not_configured',
+                'message' => 'Redis not configured',
+            ];
+        }
+
         try {
             Redis::ping();
             
@@ -94,8 +119,8 @@ class HealthController extends BaseController
             ]);
             
             return [
-                'status' => 'down',
-                'error' => $e->getMessage(),
+                'status' => 'not_available',
+                'message' => 'Redis not available (optional service)',
             ];
         }
     }
@@ -231,19 +256,39 @@ class HealthController extends BaseController
      */
     public function status(): JsonResponse
     {
-        $tenantModel = config('tenancy.tenant_model');
-        $userModel = config('tenant-engine.models.user');
+        $metrics = [
+            'total_tenants' => 'N/A',
+            'active_tenants' => 'N/A',
+            'total_users' => 'N/A',
+        ];
+
+        // Try to get tenant metrics
+        try {
+            $tenantModel = config('tenancy.tenant_model');
+            if ($tenantModel && class_exists($tenantModel)) {
+                $metrics['total_tenants'] = $tenantModel::count();
+                $metrics['active_tenants'] = $tenantModel::where('status', 'active')->count();
+            }
+        } catch (\Exception $e) {
+            // Ignore - metrics will remain N/A
+        }
+
+        // Try to get user metrics
+        try {
+            $userModel = config('tenant-engine.models.user');
+            if ($userModel && class_exists($userModel)) {
+                $metrics['total_users'] = $userModel::count();
+            }
+        } catch (\Exception $e) {
+            // Ignore - metrics will remain N/A
+        }
 
         return $this->successResponse([
             'type' => 'system-status',
             'attributes' => [
                 'status' => 'operational',
                 'environment' => app()->environment(),
-                'metrics' => [
-                    'total_tenants' => $tenantModel::count(),
-                    'active_tenants' => $tenantModel::where('status', 'active')->count(),
-                    'total_users' => $userModel::count(),
-                ],
+                'metrics' => $metrics,
             ],
         ]);
     }

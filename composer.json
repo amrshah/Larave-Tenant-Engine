@@ -13,13 +13,13 @@
         "abac",
         "swagger"
     ],
-    "homepage": "https://github.com/amrshah/tenant-engine",
+    "homepage": "https://github.com/amrshah/Laravel-Tenant-Engine",
     "license": "MIT",
     "authors": [
         {
             "name": "Ali Raza (Amr Shah)",
-            "email": "ali@amrshah.dev",
-            "homepage": "https://amrshah.dev",
+            "email": "amr.shah@gmail.com",
+            "homepage": "https://amrshah.github.io",
             "role": "Developer"
         }
     ],

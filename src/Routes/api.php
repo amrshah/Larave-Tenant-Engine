@@ -33,6 +33,9 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/login', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'login'])
         ->middleware('throttle:5,1') // 5 attempts per minute
         ->name('login');
+    Route::post('/super-admin/login', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'superAdminLogin'])
+        ->middleware('throttle:5,1') // 5 attempts per minute
+        ->name('super-admin.login');
     Route::post('/forgot-password', [\Amrshah\TenantEngine\Controllers\API\V1\Auth\AuthController::class, 'forgotPassword'])
         ->middleware('throttle:3,1') // 3 attempts per minute
         ->name('forgot-password');
@@ -69,7 +72,9 @@ Route::prefix('auth')->name('auth.')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tenants')->name('tenants.')->group(function () {
         Route::get('/', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'index'])->name('index');
+        Route::post('/', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'store'])->name('store');
         Route::get('/{tenant}', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'show'])->name('show');
+        Route::delete('/{tenant}', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'destroy'])->name('destroy');
         Route::post('/{tenant}/switch', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'switch'])->name('switch');
     });
     

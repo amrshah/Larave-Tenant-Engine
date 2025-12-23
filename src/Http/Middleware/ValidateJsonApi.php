@@ -52,6 +52,14 @@ class ValidateJsonApi
             ], 406);
         }
 
+        // Flatten JSON:API structure if present
+        if ($request->isJson() && $request->has('data.attributes')) {
+            $attributes = $request->input('data.attributes');
+            if (is_array($attributes)) {
+                $request->merge($attributes);
+            }
+        }
+
         return $next($request);
     }
 }

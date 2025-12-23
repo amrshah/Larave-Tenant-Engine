@@ -12,7 +12,7 @@ class AnalyticsController extends BaseController
     public function overview(): JsonResponse
     {
         $tenantModel = config('tenancy.tenant_model');
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
 
         $data = [
             'tenants' => [

@@ -80,8 +80,7 @@ class TenantCreateCommand extends Command
                     ['Slug', $tenant->id],
                     ['Email', $tenant->email],
                     ['Plan', $tenant->plan],
-                    ['Status', $tenant->status],
-                    ['Trial Ends', $tenant->trial_ends_at->format('Y-m-d')],
+                    ['Trial Ends', \Illuminate\Support\Carbon::parse($tenant->trial_ends_at)->format('Y-m-d')],
                 ]
             );
 

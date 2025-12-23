@@ -39,7 +39,14 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'subscription_ends_at',
         'settings',
         'data',
+        'plan_id',
+        'trial_ends_at',
     ];
+
+    public function assignedPlan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Plan::class, 'plan_id');
+    }
 
     /**
      * The attributes that should be cast.
@@ -157,7 +164,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function users()
     {
         return $this->belongsToMany(
-            config('tenant-engine.models.user'),
+            config('tenant-engine.models.user') ?: config('auth.providers.users.model'),
             'tenant_user',
             'tenant_id',
             'user_id'

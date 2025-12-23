@@ -25,8 +25,28 @@ class SettingsController extends BaseController
 
     public function update(Request $request): JsonResponse
     {
-        $settings = $request->all();
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email',
+            'phone' => 'nullable|string|max:20',
+        ]);
 
+        $data = $request->all();
+
+        \Log::info('SettingsController@update debug', [
+            'raw_data' => $request->getContent(),
+            'flattened_data' => $data,
+            'tenant_id' => tenant() ? tenant()->id : 'null',
+        ]);
+
+        // Update tenant profile fields if present
+        $profileFields = array_intersect_key($data, array_flip(['name', 'email', 'phone']));
+        if (!empty($profileFields) && tenant()) {
+            tenant()->update($profileFields);
+        }
+
+        // Handle other settings in tenant database
+        $settings = array_diff_key($data, $profileFields);
         foreach ($settings as $key => $value) {
             \DB::connection('tenant')->table('tenant_settings')->updateOrInsert(
                 ['key' => $key],
@@ -42,6 +62,11 @@ class SettingsController extends BaseController
             'type' => 'tenant-settings',
             'attributes' => [
                 'message' => 'Settings updated successfully',
+                'tenant' => tenant() ? [
+                    'name' => tenant()->name,
+                    'email' => tenant()->email,
+                    'phone' => tenant()->phone,
+                ] : null,
             ],
         ]);
     }

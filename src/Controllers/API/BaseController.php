@@ -77,11 +77,15 @@ class BaseController extends Controller
     /**
      * Success response (JSON:API format)
      */
-    protected function successResponse($data, int $statusCode = 200, array $meta = [], array $links = []): JsonResponse
+    protected function successResponse($data, int $statusCode = 200, array $meta = [], array $links = [], array $included = []): JsonResponse
     {
         $response = [
             'data' => $data,
         ];
+
+        if (!empty($included)) {
+            $response['included'] = $included;
+        }
 
         if (!empty($meta)) {
             $response['meta'] = array_merge([
@@ -201,9 +205,9 @@ class BaseController extends Controller
     /**
      * Created response
      */
-    protected function createdResponse($data, array $meta = [], array $links = []): JsonResponse
+    protected function createdResponse($data, array $included = [], array $meta = [], array $links = []): JsonResponse
     {
-        return $this->successResponse($data, 201, $meta, $links);
+        return $this->successResponse($data, 201, $meta, $links, $included);
     }
 
     /**

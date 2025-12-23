@@ -27,7 +27,7 @@ class UpdateTenantRequest extends FormRequest
             'name' => 'sometimes|string|max:255',
             'email' => "sometimes|email|unique:tenants,email,{$tenantId},id",
             'phone' => 'nullable|string|max:20',
-            'plan' => 'sometimes|string|max:50',
+            'plan_id' => 'sometimes|exists:plans,id',
         ];
     }
 

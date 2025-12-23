@@ -74,7 +74,7 @@ class OAuthController extends BaseController
             return $this->errorResponse('OAuth Failed', $e->getMessage(), 400);
         }
 
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
         
         // Find or create user
         $user = $userModel::where('email', $socialiteUser->getEmail())->first();

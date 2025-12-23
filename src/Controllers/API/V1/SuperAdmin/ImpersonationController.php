@@ -14,7 +14,7 @@ class ImpersonationController extends BaseController
             return $this->forbiddenResponse('Impersonation is disabled');
         }
 
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
         $targetUser = $userModel::findByExternalIdOrFail($user);
 
         // Store impersonation info in session

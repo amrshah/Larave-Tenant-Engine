@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Amrshah\TenantEngine\Http\Resources\UserResource;
 
 class UserController extends BaseController
 {
@@ -46,20 +47,20 @@ class UserController extends BaseController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'nullable|string|in:tenant_admin,tenant_manager,tenant_member',
+            'password' => 'sometimes|string|min:8|confirmed',
+            'role' => 'nullable|string|in:owner,admin,member,viewer',
         ]);
 
         if ($validator->fails()) {
             return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
         
         $user = $userModel::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password ?? \Illuminate\Support\Str::random(16)),
         ]);
 
         // Attach user to current tenant
@@ -82,7 +83,7 @@ class UserController extends BaseController
 
     public function show(string $user): JsonResponse
     {
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
         $user = $userModel::findByExternalIdOrFail($user);
 
         // Check if user belongs to current tenant
@@ -108,7 +109,7 @@ class UserController extends BaseController
 
     public function update(Request $request, string $user): JsonResponse
     {
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
         $user = $userModel::findByExternalIdOrFail($user);
 
         $tenant = $this->tenant();
@@ -119,7 +120,7 @@ class UserController extends BaseController
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'role' => 'sometimes|string|in:tenant_admin,tenant_manager,tenant_member',
+            'role' => 'sometimes|string|in:owner,admin,member,viewer',
         ]);
 
         if ($validator->fails()) {
@@ -141,6 +142,7 @@ class UserController extends BaseController
             'attributes' => [
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $tenant->users()->where('user_id', $user->id)->first()->pivot->role,
                 'updated_at' => $user->updated_at->toIso8601String(),
             ],
         ]);
@@ -148,7 +150,7 @@ class UserController extends BaseController
 
     public function destroy(string $user): JsonResponse
     {
-        $userModel = config('tenant-engine.models.user');
+        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
         $user = $userModel::findByExternalIdOrFail($user);
 
         $tenant = $this->tenant();

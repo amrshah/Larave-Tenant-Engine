@@ -275,7 +275,7 @@ class HealthController extends BaseController
 
         // Try to get user metrics
         try {
-            $userModel = config('tenant-engine.models.user');
+            $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
             if ($userModel && class_exists($userModel)) {
                 $metrics['total_users'] = $userModel::count();
             }

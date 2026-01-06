@@ -28,7 +28,7 @@ use Illuminate\Routing\Controller;
  * )
  * 
  * @OA\Server(
- *     url="https://api.example.com",
+ *     url="https://stratos-api.silverantacademy.com",
  *     description="Production"
  * )
  * 

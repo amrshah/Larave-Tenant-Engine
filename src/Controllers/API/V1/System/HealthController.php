@@ -97,30 +97,37 @@ class HealthController extends BaseController
      */
     protected function checkRedis(): array
     {
-        // Check if Redis is configured and available
-        if (!class_exists(\Illuminate\Support\Facades\Redis::class)) {
+        // In Laravel, the Redis facade always exists, but the underlying driver
+        // might require an extension or a package.
+        
+        // Check if we are using phpredis and the extension is missing
+        if (config('database.redis.client') === 'phpredis' && !extension_loaded('redis')) {
             return [
-                'status' => 'not_configured',
-                'message' => 'Redis not configured',
+                'status' => 'not_available',
+                'message' => 'Redis extension (phpredis) is not installed.',
             ];
         }
 
         try {
-            Redis::ping();
+            // Using a connection check instead of a direct ping to be safer
+            Redis::connection()->ping();
             
             return [
                 'status' => 'up',
                 'message' => 'Redis is operational',
             ];
         } catch (\Throwable $e) {
-            \Log::warning('Redis health check failed', [
-                'error' => $e->getMessage(),
-                'type' => get_class($e),
-            ]);
+            // Only log if it's an actual connection error, not a missing class/config error
+            if (!str_contains($e->getMessage(), 'not found')) {
+                \Log::warning('Redis health check failed', [
+                    'error' => $e->getMessage(),
+                    'type' => get_class($e),
+                ]);
+            }
             
             return [
                 'status' => 'not_available',
-                'message' => 'Redis not available (optional service)',
+                'message' => 'Redis not available or not configured.',
             ];
         }
     }

@@ -21,7 +21,9 @@ class UpdateTenantRequest extends FormRequest
      */
     public function rules(): array
     {
-        $tenantId = $this->route('tenant'); // Get tenant ID from route
+        $tenantExternalId = $this->route('tenant');
+        $tenant = \Amrshah\TenantEngine\Models\Tenant::findByExternalId($tenantExternalId);
+        $tenantId = $tenant ? $tenant->id : $tenantExternalId;
 
         return [
             'name' => 'sometimes|string|max:255',

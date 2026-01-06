@@ -41,12 +41,6 @@
         "pestphp/pest": "^2.0||^3.0",
         "pestphp/pest-plugin-laravel": "^2.0||^3.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../../laravel-arbac"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Amrshah\\TenantEngine\\": "src/",

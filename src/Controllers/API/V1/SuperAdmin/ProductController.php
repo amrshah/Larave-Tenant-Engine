@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends BaseController
 {
-    public function index(Request $request)
+    public function index(Request $request): \Illuminate\Http\JsonResponse
     {
         $products = Product::query()
             ->when($request->search, function ($query, $search) {
@@ -19,10 +19,10 @@ class ProductController extends BaseController
             ->latest()
             ->paginate($request->per_page ?? 15);
 
-        return response()->json($products);
+        return $this->paginatedResponse($products, \Amrshah\TenantEngine\Http\Resources\ProductResource::class);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -33,15 +33,15 @@ class ProductController extends BaseController
 
         $product = Product::create($validated);
 
-        return response()->json($product, 201);
+        return $this->createdResponse(new \Amrshah\TenantEngine\Http\Resources\ProductResource($product));
     }
 
-    public function show(Product $product)
+    public function show(Product $product): \Illuminate\Http\JsonResponse
     {
-        return response()->json($product);
+        return $this->successResponse(new \Amrshah\TenantEngine\Http\Resources\ProductResource($product));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -52,13 +52,13 @@ class ProductController extends BaseController
 
         $product->update($validated);
 
-        return response()->json($product);
+        return $this->successResponse(new \Amrshah\TenantEngine\Http\Resources\ProductResource($product));
     }
 
-    public function destroy(Product $product)
+    public function destroy(Product $product): \Illuminate\Http\JsonResponse
     {
         $product->delete();
 
-        return response()->json(['message' => 'Product deleted successfully']);
+        return $this->noContentResponse();
     }
 }

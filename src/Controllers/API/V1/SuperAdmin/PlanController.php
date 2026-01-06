@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 
 class PlanController extends BaseController
 {
-    public function index(Request $request)
+    public function index(Request $request): \Illuminate\Http\JsonResponse
     {
         $plans = Plan::with('products')
             ->when($request->search, function ($query, $search) {
@@ -18,10 +18,10 @@ class PlanController extends BaseController
             ->latest()
             ->paginate($request->per_page ?? 15);
 
-        return response()->json($plans);
+        return $this->paginatedResponse($plans, \Amrshah\TenantEngine\Http\Resources\PlanResource::class);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -40,15 +40,15 @@ class PlanController extends BaseController
             $plan->products()->sync($validated['products']);
         }
 
-        return response()->json($plan->load('products'), 201);
+        return $this->createdResponse(new \Amrshah\TenantEngine\Http\Resources\PlanResource($plan->load('products')));
     }
 
-    public function show(Plan $plan)
+    public function show(Plan $plan): \Illuminate\Http\JsonResponse
     {
-        return response()->json($plan->load('products'));
+        return $this->successResponse(new \Amrshah\TenantEngine\Http\Resources\PlanResource($plan->load('products')));
     }
 
-    public function update(Request $request, Plan $plan)
+    public function update(Request $request, Plan $plan): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -67,15 +67,13 @@ class PlanController extends BaseController
             $plan->products()->sync($validated['products']);
         }
 
-        return response()->json($plan->load('products'));
+        return $this->successResponse(new \Amrshah\TenantEngine\Http\Resources\PlanResource($plan->load('products')));
     }
 
-    public function destroy(Plan $plan)
+    public function destroy(Plan $plan): \Illuminate\Http\JsonResponse
     {
-        // Check if plan has tenants? Maybe prevent deletion or nullify.
-        // For now, allow delete (constraints might fail if migration didn't handle cascade properly on tenants table? I set nullable on tenants, so it's fine)
         $plan->delete();
 
-        return response()->json(['message' => 'Plan deleted successfully']);
+        return $this->noContentResponse();
     }
 }

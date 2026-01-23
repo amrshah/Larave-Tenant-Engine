@@ -19,7 +19,6 @@ class UserResource extends JsonResource
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone ?? null,
-                'role' => $this->pivot ? $this->pivot->role : null,
                 'email_verified_at' => $this->email_verified_at?->toIso8601String(),
                 'last_login_at' => $this->last_login_at?->toIso8601String(),
                 'created_at' => $this->created_at->toIso8601String(),
@@ -30,9 +29,8 @@ class UserResource extends JsonResource
                 $relationships = [];
 
                 if (in_array('tenants', $includes)) {
-                    $tenants = $this->tenants ?? collect();
                     $relationships['tenants'] = [
-                        'data' => $tenants->map(fn($tenant) => [
+                        'data' => $this->tenants->map(fn($tenant) => [
                             'type' => 'tenants',
                             'id' => $tenant->external_id,
                         ]),
@@ -40,9 +38,8 @@ class UserResource extends JsonResource
                 }
 
                 if (in_array('roles', $includes)) {
-                    $roles = $this->roles ?? collect();
                     $relationships['roles'] = [
-                        'data' => $roles->map(fn($role) => [
+                        'data' => $this->roles->map(fn($role) => [
                             'type' => 'roles',
                             'id' => $role->id,
                         ]),

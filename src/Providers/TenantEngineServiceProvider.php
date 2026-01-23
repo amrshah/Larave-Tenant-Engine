@@ -17,19 +17,6 @@ class TenantEngineServiceProvider extends ServiceProvider
             dirname(__DIR__, 2).'/config/tenant-engine.php',
             'tenant-engine'
         );
-
-        // Set Stancl Tenancy model
-        config(['tenancy.tenant_model' => config('tenant-engine.models.tenant')]);
-
-        // Map TenantEngine config to Stancl/Tenancy config
-        $this->configureTenancy();
-
-        // Register Stancl Tenancy Service Provider
-        if (!class_exists('Stancl\Tenancy\TenancyServiceProvider')) {
-             // Fallback
-        }
-        $this->app->register(\Stancl\Tenancy\TenancyServiceProvider::class);
-        $this->app->register(\Amrshah\TenantEngine\Providers\TenancyServiceProvider::class);
     }
 
     /**
@@ -83,18 +70,18 @@ class TenantEngineServiceProvider extends ServiceProvider
         }
 
         // Super Admin routes
-        Route::middleware(['api', 'api.version', 'validate_jsonapi'])
+        Route::middleware(['api', 'api.version'])
             ->prefix('api/v1/super-admin')
             ->group(__DIR__.'/../Routes/super-admin.php');
 
         // Central API routes (authentication, tenant selection)
-        Route::middleware(['api', 'api.version', 'validate_jsonapi'])
+        Route::middleware(['api', 'api.version'])
             ->prefix('api/v1')
             ->group(__DIR__.'/../Routes/api.php');
 
         // Tenant-scoped routes
-        Route::middleware(['api', 'api.version', 'identify_tenant', 'validate_jsonapi'])
-            ->prefix('{tenant}/api/v1')
+        Route::middleware(['api', 'api.version'])
+            ->prefix('{tenant_slug}/api/v1')
             ->group(__DIR__.'/../Routes/tenant.php');
     }
 
@@ -113,35 +100,5 @@ class TenantEngineServiceProvider extends ServiceProvider
                 $router->aliasMiddleware($alias, $class);
             }
         }
-    }
-
-    /**
-     * Configure Stancl/Tenancy based on TenantEngine config.
-     */
-    protected function configureTenancy(): void
-    {
-        // 1. Inject Database Connection Template
-        config(['database.connections.tenant_template' => config('tenant-engine.database.tenant')]);
-
-        // 2. Set Tenancy Defaults
-        config([
-            'tenancy.tenant_model' => config('tenant-engine.models.tenant'),
-            'tenancy.id_generator' => \Stancl\Tenancy\UUIDGenerator::class,
-            'tenancy.bootstrappers' => [
-                \Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
-                \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
-                \Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-            ],
-            'tenancy.database.template_tenant_connection' => 'tenant_template',
-            'tenancy.database.prefix' => config('tenant-engine.tenant.database_prefix', 'tenant_'),
-            'tenancy.database.suffix' => '.sqlite', // Fixed for SQLite, could make configurable
-            'tenancy.database.managers' => [
-                'sqlite' => \Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
-                'mysql' => \Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
-            ],
-        ]);
-        
-        // Ensure central connection is set
-        config(['tenancy.database.central_connection' => config('tenant-engine.database.central.connection')]);
     }
 }

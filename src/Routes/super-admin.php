@@ -66,22 +66,4 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
         Route::get('/', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\AuditLogController::class, 'index'])->name('index');
         Route::get('/{log}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\AuditLogController::class, 'show'])->name('show');
     });
-
-    // Product Management
-    Route::prefix('products')->name('super-admin.products.')->group(function () {
-        Route::get('/', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\ProductController::class, 'index'])->name('index');
-        Route::post('/', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\ProductController::class, 'store'])->name('store');
-        Route::get('/{product}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\ProductController::class, 'show'])->name('show');
-        Route::patch('/{product}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\ProductController::class, 'update'])->name('update');
-        Route::delete('/{product}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\ProductController::class, 'destroy'])->name('destroy');
-    });
-
-    // Plan Management
-    Route::prefix('plans')->name('super-admin.plans.')->group(function () {
-        Route::get('/', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\PlanController::class, 'index'])->name('index');
-        Route::post('/', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\PlanController::class, 'store'])->name('store');
-        Route::get('/{plan}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\PlanController::class, 'show'])->name('show');
-        Route::patch('/{plan}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\PlanController::class, 'update'])->name('update');
-        Route::delete('/{plan}', [\Amrshah\TenantEngine\Controllers\API\V1\SuperAdmin\PlanController::class, 'destroy'])->name('destroy');
-    });
 });

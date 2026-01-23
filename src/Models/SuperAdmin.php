@@ -3,7 +3,6 @@
 namespace Amrshah\TenantEngine\Models;
 
 use Amrshah\TenantEngine\Models\Traits\HasExternalId;
-use Amrshah\TenantEngine\Models\Traits\HasTenants;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class SuperAdmin extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasExternalId, HasTenants, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, HasExternalId, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

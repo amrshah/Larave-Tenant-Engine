@@ -1,19 +1,24 @@
 <?php
+/**
+ * HasTenants Trait
+ * 
+ * Provides relationship to tenants for the User model.
+ */
 
 namespace Amrshah\TenantEngine\Models\Traits;
 
-/**
- * Trait to handle tenant relationship for users.
- */
+use Amrshah\TenantEngine\Models\Tenant;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 trait HasTenants
 {
     /**
-     * Get tenants belonging to this user.
+     * Get the tenants belonging to the user.
      */
-    public function tenants()
+    public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(
-            config('tenant-engine.models.tenant'),
+            config('tenant-engine.models.tenant', Tenant::class),
             'tenant_user',
             'user_id',
             'tenant_id'
@@ -21,10 +26,10 @@ trait HasTenants
     }
 
     /**
-     * Check if user is member of a tenant.
+     * Check if user has access to a specific tenant.
      */
-    public function isMemberOf(string $tenantId): bool
+    public function hasTenant(string $tenantId): bool
     {
-        return $this->tenants()->where('tenant_id', $tenantId)->exists();
+        return $this->tenants()->where('tenants.id', $tenantId)->exists();
     }
 }

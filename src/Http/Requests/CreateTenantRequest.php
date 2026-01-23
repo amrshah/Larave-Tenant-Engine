@@ -17,16 +17,6 @@ class CreateTenantRequest extends FormRequest
     }
 
     /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation()
-    {
-        if ($this->has('data.attributes')) {
-            $this->merge($this->input('data.attributes'));
-        }
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array

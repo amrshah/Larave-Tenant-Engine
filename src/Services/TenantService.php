@@ -61,7 +61,7 @@ class TenantService
             'name' => $data['name'] ?? null,
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
-            'plan_id' => $data['plan_id'] ?? null,
+            'plan' => $data['plan'] ?? null,
         ]));
 
         Log::info('Tenant updated', [

@@ -22,15 +22,6 @@ class AnalyticsController extends BaseController
             'activity' => [
                 'actions_today' => $this->getActionsToday(),
                 'actions_this_week' => $this->getActionsThisWeek(),
-                'actions_this_month' => $this->getActionsThisMonth(),
-            ],
-            'growth' => [
-                'user_growth_percentage' => $this->calculateUserGrowth(),
-                'activity_growth_percentage' => $this->calculateActivityGrowth(),
-            ],
-            'revenue' => [
-                'mrr' => 0, // Placeholder
-                'currency' => 'USD',
             ],
         ];
 
@@ -102,46 +93,5 @@ class AnalyticsController extends BaseController
         return $auditLogModel::currentTenant()
             ->where('created_at', '>=', now()->subWeek())
             ->count();
-    }
-
-    protected function getActionsThisMonth(): int
-    {
-        $auditLogModel = config('tenant-engine.models.audit_log');
-        
-        return $auditLogModel::currentTenant()
-            ->where('created_at', '>=', now()->startOfMonth())
-            ->count();
-    }
-
-    protected function calculateUserGrowth(): float
-    {
-        $tenant = $this->tenant();
-        $total = $tenant->users()->count();
-        if ($total === 0) return 0;
-
-        $lastMonth = $tenant->users()
-            ->where('tenant_user.created_at', '<', now()->startOfMonth())
-            ->count();
-            
-        if ($lastMonth === 0) return 100; // All growth is new
-
-        return round((($total - $lastMonth) / $lastMonth) * 100, 1);
-    }
-
-    protected function calculateActivityGrowth(): float
-    {
-        $auditLogModel = config('tenant-engine.models.audit_log');
-        
-        $thisMonth = $this->getActionsThisMonth();
-        $lastMonth = $auditLogModel::currentTenant()
-            ->whereBetween('created_at', [
-                now()->subMonth()->startOfMonth(),
-                now()->subMonth()->endOfMonth()
-            ])
-            ->count();
-
-        if ($lastMonth === 0) return $thisMonth > 0 ? 100 : 0;
-
-        return round((($thisMonth - $lastMonth) / $lastMonth) * 100, 1);
     }
 }

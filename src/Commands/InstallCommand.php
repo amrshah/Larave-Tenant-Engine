@@ -96,16 +96,10 @@ class InstallCommand extends Command
      */
     protected function runMigrations(): void
     {
-        $this->info('Running standard migrations...');
-        $this->call('migrate', [
-            '--force' => $this->option('force') || !$this->confirm('Run in production mode?', false),
-        ]);
-
-        $this->newLine();
-        $this->info('Running central migrations...');
+        $this->info('Running migrations...');
+        
         $this->call('migrate', [
             '--path' => 'database/migrations/central',
-            '--force' => $this->option('force'),
         ]);
     }
 

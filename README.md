@@ -53,9 +53,7 @@
 - ✔ **Performance metrics**
 
 ### Security
-- ✔ **Rate limiting** added to all authentication endpoints (Login, Register, Password Reset)
-- ✔ **CSRF protection** implemented for OAuth flows via cryptographically secure state parameters
-- ✔ **Dedicated Super Admin middleware** for robust access control
+- ✔ **Rate limiting** (per user, per tenant, super admin)
 - ✔ **CORS** configuration
 - ✔ **Security headers** (CSP, X-Frame-Options, etc.)
 - ✔ **SQL injection prevention** (Eloquent ORM)
@@ -63,8 +61,7 @@
 
 ### Performance
 - ✔ **Redis caching** (tenant-aware)
-- ✔ **Database query optimization** (High-performance indexes added for status, email, and plan lookups)
-- ✔ **Optimized relationships** via eager loading hints
+- ✔ **Database query optimization** (indexes, eager loading)
 - ✔ **Queue support** for heavy operations
 - ✔ **Horizontal scalability**
 
@@ -73,7 +70,7 @@
 ## Requirements
 
 - **PHP:** 8.1 or higher
-- **Laravel:** 10.x, 11.x, or 12.x (First-class support for Laravel 12)
+- **Laravel:** 10.x, 11.x, or 12.x
 - **MySQL:** 8.0+ or **PostgreSQL:** 13+
 - **Redis:** 6.0+ (for caching and queues)
 - **Composer:** 2.5+
@@ -102,34 +99,6 @@ The installation command will:
 - ✔ Create default roles and permissions
 - ✔ Generate Swagger documentation
 - ✔ Set up example tenant (optional)
-
----
-
-## 🔄 Migration Guide
-
-### Upgrading to v1.0.0 (from alpha)
-
-If you are upgrading an existing installation, follow these steps to apply the latest security and performance fixes:
-
-1. **Update Package**:
-   ```bash
-   composer update amrshah/tenant-engine
-   ```
-
-2. **Run New Migrations** (Adds performance indexes):
-   ```bash
-   php artisan migrate
-   ```
-
-3. **Refresh Configuration & Cache**:
-   ```bash
-   php artisan config:clear
-   php artisan route:clear
-   php artisan cache:clear
-   ```
-
-4. **Verify Rate Limiting**:
-   Check your authentication endpoints to ensure rate limiting is active.
 
 ---
 
@@ -336,5 +305,5 @@ This package is built on top of excellent open-source packages:
 
 **Made with ❤️ by Ali Raza (Amr Shah)**
 
-**Version:** 1.0.1  
-**Last Updated:** 2025-12-19
+**Version:** 1.0.0-alpha  
+**Last Updated:** 2025-11-23

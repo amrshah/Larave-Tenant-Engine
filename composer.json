@@ -13,13 +13,13 @@
         "abac",
         "swagger"
     ],
-    "homepage": "https://github.com/amrshah/Laravel-Tenant-Engine",
+    "homepage": "https://github.com/amrshah/tenant-engine",
     "license": "MIT",
     "authors": [
         {
             "name": "Ali Raza (Amr Shah)",
-            "email": "amr.shah@gmail.com",
-            "homepage": "https://amrshah.github.io",
+            "email": "ali@amrshah.dev",
+            "homepage": "https://amrshah.dev",
             "role": "Developer"
         }
     ],
@@ -41,6 +41,12 @@
         "pestphp/pest": "^2.0||^3.0",
         "pestphp/pest-plugin-laravel": "^2.0||^3.0"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../laravel-arbac"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Amrshah\\TenantEngine\\": "src/",

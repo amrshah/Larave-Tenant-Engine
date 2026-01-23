@@ -72,9 +72,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tenants')->name('tenants.')->group(function () {
         Route::get('/', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'index'])->name('index');
-        Route::post('/', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'store'])->name('store');
         Route::get('/{tenant}', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'show'])->name('show');
-        Route::delete('/{tenant}', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'destroy'])->name('destroy');
         Route::post('/{tenant}/switch', [\Amrshah\TenantEngine\Controllers\API\V1\Central\TenantSelectionController::class, 'switch'])->name('switch');
     });
     

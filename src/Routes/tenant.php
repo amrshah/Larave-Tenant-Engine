@@ -16,19 +16,12 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 */
 
 Route::middleware([
+    InitializeTenancyByPath::class,
+    PreventAccessFromCentralDomains::class,
     'auth:sanctum',
     'check_tenant_status',
 ])->group(function () {
     
-    // Base Tenant Info (Health Check)
-    Route::get('/', function () {
-        return response()->json([
-            'message' => 'Tenant API v1',
-            'tenant' => tenant('id'),
-            'status' => 'active'
-        ]);
-    })->name('info');
-
     // Tenant Settings
     Route::prefix('settings')->name('tenant.settings.')->group(function () {
         Route::get('/', [\Amrshah\TenantEngine\Controllers\API\V1\Tenant\SettingsController::class, 'index'])->name('index');

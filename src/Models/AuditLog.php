@@ -10,8 +10,6 @@ class AuditLog extends Model
 {
     use HasFactory, HasExternalId;
 
-    protected $connection = 'sqlite';
-
     /**
      * The attributes that are mass assignable.
      */

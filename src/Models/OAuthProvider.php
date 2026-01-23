@@ -53,7 +53,7 @@ class OAuthProvider extends Model
      */
     public function user()
     {
-        return $this->belongsTo(config('tenant-engine.models.user') ?: config('auth.providers.users.model'));
+        return $this->belongsTo(config('tenant-engine.models.user'));
     }
 
     /**

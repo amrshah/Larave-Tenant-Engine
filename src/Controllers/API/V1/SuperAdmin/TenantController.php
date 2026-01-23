@@ -58,11 +58,8 @@ class TenantController extends BaseController
         }
 
         if ($request->has('filter.plan')) {
-            $planId = $request->input('filter.plan');
-            $query->where('plan_id', $planId);
+            $query->where('plan', $request->input('filter.plan'));
         }
-
-        $query->with(['assignedPlan.products']); // Eager load plan and products
 
         if ($request->has('filter.search')) {
             $search = $request->input('filter.search');
@@ -113,7 +110,19 @@ class TenantController extends BaseController
         try {
             $tenant = $this->tenantService->createTenant($request->validated());
 
-            return $this->createdResponse(new TenantResource($tenant));
+            return $this->createdResponse([
+                'type' => 'tenants',
+                'id' => $tenant->external_id,
+                'attributes' => [
+                    'name' => $tenant->name,
+                    'slug' => $tenant->id,
+                    'email' => $tenant->email,
+                    'phone' => $tenant->phone,
+                    'plan' => $tenant->plan,
+                    'status' => $tenant->status,
+                    'created_at' => $tenant->created_at->toIso8601String(),
+                ],
+            ]);
         } catch (\Exception $e) {
             return $this->errorResponse('Tenant Creation Failed', $e->getMessage(), 500);
         }
@@ -139,9 +148,28 @@ class TenantController extends BaseController
     public function show(string $tenant): JsonResponse
     {
         $tenant = Tenant::findByExternalIdOrFail($tenant);
-        $tenant->load(['assignedPlan.products']);
 
-        return $this->successResponse(new TenantResource($tenant));
+        return $this->successResponse([
+            'type' => 'tenants',
+            'id' => $tenant->external_id,
+            'attributes' => [
+                'name' => $tenant->name,
+                'slug' => $tenant->id,
+                'email' => $tenant->email,
+                'phone' => $tenant->phone,
+                'plan' => $tenant->plan,
+                'status' => $tenant->status,
+                'trial_ends_at' => $tenant->trial_ends_at?->toIso8601String(),
+                'subscription_ends_at' => $tenant->subscription_ends_at?->toIso8601String(),
+                'created_at' => $tenant->created_at->toIso8601String(),
+                'updated_at' => $tenant->updated_at->toIso8601String(),
+            ],
+            'meta' => [
+                'users_count' => $tenant->users()->count(),
+                'is_on_trial' => $tenant->isOnTrial(),
+                'has_active_subscription' => $tenant->hasActiveSubscription(),
+            ],
+        ]);
     }
 
     /**
@@ -165,9 +193,18 @@ class TenantController extends BaseController
     {
         $tenant = Tenant::findByExternalIdOrFail($tenant);
         $tenant = $this->tenantService->updateTenant($tenant, $request->validated());
-        $tenant->load(['assignedPlan.products']);
 
-        return $this->successResponse(new TenantResource($tenant));
+        return $this->successResponse([
+            'type' => 'tenants',
+            'id' => $tenant->external_id,
+            'attributes' => [
+                'name' => $tenant->name,
+                'email' => $tenant->email,
+                'phone' => $tenant->phone,
+                'plan' => $tenant->plan,
+                'updated_at' => $tenant->updated_at->toIso8601String(),
+            ],
+        ]);
     }
 
     /**
@@ -203,7 +240,14 @@ class TenantController extends BaseController
         $tenant = Tenant::findByExternalIdOrFail($tenant);
         $tenant->suspend();
 
-        return $this->successResponse(new TenantResource($tenant));
+        return $this->successResponse([
+            'type' => 'tenants',
+            'id' => $tenant->external_id,
+            'attributes' => [
+                'status' => $tenant->status,
+                'updated_at' => $tenant->updated_at->toIso8601String(),
+            ],
+        ]);
     }
 
     /**
@@ -214,7 +258,14 @@ class TenantController extends BaseController
         $tenant = Tenant::findByExternalIdOrFail($tenant);
         $tenant->activate();
 
-        return $this->successResponse(new TenantResource($tenant));
+        return $this->successResponse([
+            'type' => 'tenants',
+            'id' => $tenant->external_id,
+            'attributes' => [
+                'status' => $tenant->status,
+                'updated_at' => $tenant->updated_at->toIso8601String(),
+            ],
+        ]);
     }
 
     /**
@@ -225,6 +276,13 @@ class TenantController extends BaseController
         $tenant = Tenant::findByExternalIdOrFail($tenant);
         $tenant->cancel();
 
-        return $this->successResponse(new TenantResource($tenant));
+        return $this->successResponse([
+            'type' => 'tenants',
+            'id' => $tenant->external_id,
+            'attributes' => [
+                'status' => $tenant->status,
+                'updated_at' => $tenant->updated_at->toIso8601String(),
+            ],
+        ]);
     }
 }

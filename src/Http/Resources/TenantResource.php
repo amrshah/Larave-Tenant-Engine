@@ -14,22 +14,13 @@ class TenantResource extends JsonResource
     {
         return [
             'type' => 'tenants',
-            'id' => $this->id,
+            'id' => $this->external_id,
             'attributes' => [
                 'name' => $this->name,
-                'external_id' => $this->external_id,
                 'slug' => $this->id,
                 'email' => $this->email,
                 'phone' => $this->phone ?? null,
-
-                'plan' => $this->whenLoaded('assignedPlan', function() {
-                    return [
-                        'id' => $this->assignedPlan->id,
-                        'name' => $this->assignedPlan->name,
-                        'slug' => $this->assignedPlan->slug,
-                        'products' => $this->assignedPlan->products->map(fn($p) => $p->only(['id', 'name', 'slug'])),
-                    ];
-                }),
+                'plan' => $this->plan,
                 'status' => $this->status,
                 'trial_ends_at' => $this->trial_ends_at?->toIso8601String(),
                 'subscription_ends_at' => $this->subscription_ends_at?->toIso8601String(),
@@ -47,12 +38,14 @@ class TenantResource extends JsonResource
                 $relationships = [];
 
                 if (in_array('users', $includes)) {
-                    $users = $this->users ?? collect();
                     $relationships['users'] = [
-                        'data' => $users->map(fn($user) => [
+                        'data' => $this->users->map(fn($user) => [
                             'type' => 'users',
                             'id' => $user->external_id,
                         ]),
+                        'meta' => [
+                            'count' => $this->users->count(),
+                        ],
                     ];
                 }
 

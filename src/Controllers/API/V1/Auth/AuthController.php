@@ -3,6 +3,9 @@
 namespace Amrshah\TenantEngine\Controllers\API\V1\Auth;
 
 use Amrshah\TenantEngine\Controllers\API\BaseController;
+use Amrshah\TenantEngine\Http\Requests\LoginRequest;
+use Amrshah\TenantEngine\Http\Resources\SuperAdminResource;
+use Amrshah\TenantEngine\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,10 +41,6 @@ class AuthController extends BaseController
      */
     public function register(Request $request): JsonResponse
     {
-        if ($request->has('data.attributes')) {
-            $request->merge($request->input('data.attributes'));
-        }
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -53,7 +52,7 @@ class AuthController extends BaseController
         }
 
         try {
-            $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
+            $userModel = config('tenant-engine.models.user');
             
             $user = $userModel::create([
                 'name' => $request->name,
@@ -65,23 +64,17 @@ class AuthController extends BaseController
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return $this->createdResponse([
-                'type' => 'auth',
-                'id' => 'current',
+                'type' => 'users',
+                'id' => $user->external_id,
                 'attributes' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'created_at' => $user->created_at->toIso8601String(),
+                ],
+                'meta' => [
                     'token' => $token,
                     'token_type' => 'Bearer',
-                    'expires_at' => null,
                 ],
-                'relationships' => [
-                    'user' => [
-                        'data' => [
-                            'type' => 'users',
-                            'id' => $user->external_id,
-                        ],
-                    ],
-                ],
-            ], [
-                (new \Amrshah\TenantEngine\Http\Resources\UserResource($user))->resolve($request)
             ]);
         } catch (\Exception $e) {
             \Log::error('User registration failed', [
@@ -115,22 +108,9 @@ class AuthController extends BaseController
      *     @OA\Response(response=200, description="Login successful")
      * )
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        if ($request->has('data.attributes')) {
-            $request->merge($request->input('data.attributes'));
-        }
-
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationErrorResponse($validator->errors()->toArray());
-        }
-
-        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
+        $userModel = config('tenant-engine.models.user');
         $user = $userModel::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -140,25 +120,12 @@ class AuthController extends BaseController
         // Create token
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return $this->successResponse([
-            'type' => 'auth',
-            'id' => 'current',
-            'attributes' => [
+        return (new UserResource($user))->additional([
+            'meta' => [
                 'token' => $token,
                 'token_type' => 'Bearer',
-                'expires_at' => null,
             ],
-            'relationships' => [
-                'user' => [
-                    'data' => [
-                        'type' => 'users',
-                        'id' => $user->external_id,
-                    ],
-                ],
-            ],
-        ], 200, [], [], [
-            (new \Amrshah\TenantEngine\Http\Resources\UserResource($user))->resolve($request)
-        ]);
+        ])->response();
     }
 
     /**
@@ -179,52 +146,31 @@ class AuthController extends BaseController
      *     @OA\Response(response=200, description="Login successful")
      * )
      */
-    public function superAdminLogin(Request $request): JsonResponse
+    public function superAdminLogin(LoginRequest $request): JsonResponse
     {
-        if ($request->has('data.attributes')) {
-            $request->merge($request->input('data.attributes'));
-        }
+        $adminModel = config('tenant-engine.models.super_admin');
+        $admin = $adminModel::where('email', $request->email)->first();
 
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationErrorResponse($validator->errors()->toArray());
-        }
-
-        $superAdmin = \Amrshah\TenantEngine\Models\SuperAdmin::where('email', $request->email)->first();
-
-        if (!$superAdmin || !Hash::check($request->password, $superAdmin->password)) {
+        if (!$admin || !Hash::check($request->password, $admin->password)) {
             return $this->unauthorizedResponse('Invalid credentials');
         }
 
-        // Create token
-        $token = $superAdmin->createToken('super-admin-token')->plainTextToken;
+        if (!$admin->isActive()) {
+            return $this->forbiddenResponse('Your account is not active');
+        }
 
-        return $this->successResponse([
-            'type' => 'auth',
-            'id' => 'current',
-            'attributes' => [
+        // Update last login
+        $admin->updateLastLogin();
+
+        // Create token
+        $token = $admin->createToken('super-admin-token')->plainTextToken;
+
+        return (new SuperAdminResource($admin))->additional([
+            'meta' => [
                 'token' => $token,
                 'token_type' => 'Bearer',
-                'expires_at' => null,
             ],
-            'relationships' => [
-                'user' => [
-                    'data' => [
-                        'type' => 'users', // Use 'users' type for uniform auth logic
-                        'id' => $superAdmin->external_id,
-                    ],
-                ],
-            ],
-        ], 200, [], [], [
-            array_merge(
-                (new \Amrshah\TenantEngine\Http\Resources\SuperAdminResource($superAdmin))->resolve($request),
-                ['type' => 'users'] // Override type to 'users' for uniform auth logic on frontend
-            )
-        ]);
+        ])->response();
     }
 
     /**
@@ -259,12 +205,17 @@ class AuthController extends BaseController
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
-        
-        $resource = $user instanceof \Amrshah\TenantEngine\Models\SuperAdmin 
-            ? new \Amrshah\TenantEngine\Http\Resources\SuperAdminResource($user)
-            : new \Amrshah\TenantEngine\Http\Resources\UserResource($user);
 
-        return $this->successResponse($resource);
+        return $this->successResponse([
+            'type' => 'users',
+            'id' => $user->external_id,
+            'attributes' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'email_verified_at' => $user->email_verified_at?->toIso8601String(),
+                'created_at' => $user->created_at->toIso8601String(),
+            ],
+        ]);
     }
 
     /**
@@ -280,31 +231,12 @@ class AuthController extends BaseController
         // Create new token
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        $resource = $user instanceof \Amrshah\TenantEngine\Models\SuperAdmin 
-            ? new \Amrshah\TenantEngine\Http\Resources\SuperAdminResource($user)
-            : new \Amrshah\TenantEngine\Http\Resources\UserResource($user);
-
         return $this->successResponse([
-            'type' => 'auth',
-            'id' => 'current',
+            'type' => 'tokens',
             'attributes' => [
                 'token' => $token,
                 'token_type' => 'Bearer',
-                'expires_at' => null,
             ],
-            'relationships' => [
-                'user' => [
-                    'data' => [
-                        'type' => 'users',
-                        'id' => $user->external_id,
-                    ],
-                ],
-            ],
-        ], 200, [], [], [
-            array_merge(
-                $resource->resolve($request),
-                ['type' => 'users']
-            )
         ]);
     }
 
@@ -361,7 +293,7 @@ class AuthController extends BaseController
      */
     public function verifyEmail(Request $request, $id, $hash): JsonResponse
     {
-        $userModel = config('tenant-engine.models.user') ?: config('auth.providers.users.model');
+        $userModel = config('tenant-engine.models.user');
         $user = $userModel::findOrFail($id);
 
         if (!hash_equals((string) $hash, sha1($user->email))) {

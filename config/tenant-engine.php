@@ -160,16 +160,13 @@ return [
         ],
         
         'tenant' => [
-            'driver' => env('TENANT_DB_DRIVER', 'sqlite'),
-            'database' => env('TENANT_DB_DATABASE', database_path('tenant_template.sqlite')),
-            'prefix' => '',
-            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-
-            // MySQL Fallback keys (kept for reference if driver switches)
+            'connection' => 'tenant',
             'host' => env('TENANT_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('TENANT_DB_PORT', env('DB_PORT', '3306')),
             'username' => env('TENANT_DB_USERNAME', env('DB_USERNAME', 'forge')),
             'password' => env('TENANT_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
         ],
     ],
 
@@ -277,7 +274,7 @@ return [
     'middleware' => [
         'super_admin' => \Amrshah\TenantEngine\Middleware\EnsureSuperAdmin::class,
         'tenant_admin' => \Amrshah\TenantEngine\Http\Middleware\TenantAdminOnly::class,
-        'identify_tenant' => \Amrshah\TenantEngine\Http\Middleware\DebugInitTenancy::class,
+        'identify_tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByPath::class,
         'check_tenant_status' => \Amrshah\TenantEngine\Http\Middleware\CheckTenantStatus::class,
         'validate_jsonapi' => \Amrshah\TenantEngine\Http\Middleware\ValidateJsonApi::class,
         'log_activity' => \Amrshah\TenantEngine\Http\Middleware\LogActivity::class,
@@ -294,7 +291,7 @@ return [
     */
 
     'models' => [
-        'user' => null, // Leave null to use default auth user model
+        'user' => \App\Models\User::class,
         'tenant' => \Amrshah\TenantEngine\Models\Tenant::class,
         'super_admin' => \Amrshah\TenantEngine\Models\SuperAdmin::class,
         'oauth_provider' => \Amrshah\TenantEngine\Models\OAuthProvider::class,

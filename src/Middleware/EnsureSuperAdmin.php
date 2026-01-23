@@ -28,17 +28,8 @@ class EnsureSuperAdmin
             ], 401);
         }
 
-        // Check if user has super admin role or is SuperAdmin instance
-        $isSuperAdmin = false;
-        
-        if ($request->user() instanceof SuperAdmin) {
-            $isSuperAdmin = true;
-        } elseif (method_exists($request->user(), 'hasRole')) {
-            $roleName = config('tenant-engine.super_admin.role_name', 'super_admin');
-            $isSuperAdmin = $request->user()->hasRole($roleName);
-        }
-
-        if (!$isSuperAdmin) {
+        // Check if user is a SuperAdmin instance
+        if (!($request->user() instanceof SuperAdmin)) {
             return response()->json([
                 'errors' => [[
                     'status' => '403',
